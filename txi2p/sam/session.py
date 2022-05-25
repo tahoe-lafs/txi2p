@@ -24,7 +24,7 @@ def eprint(*args, **kwargs):
 
 
 class SessionCreateSender(SAMSender):
-    def sendSessionCreate(self, samVersion, style, id, privKey=None, localPort=None, options={}, sigType=None):
+    def sendSessionCreate(self, samVersion, style, id, privKey, localPort, options, sigType):
         msg = 'SESSION CREATE'
         msg += ' STYLE=%s' % style
         msg += ' ID=%s' % id
