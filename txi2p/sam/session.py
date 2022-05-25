@@ -101,9 +101,11 @@ SessionCreateProtocol = makeSAMProtocol(
 class SessionCreateFactory(SAMFactory):
     protocol = SessionCreateProtocol
 
-    def __init__(self, nickname, style='STREAM', keyfile=None, localPort=None, options={}, sigType=None):
+    def __init__(self, nickname, style='STREAM', keyfile=None, localPort=None, options=None, sigType=None):
         if style != 'STREAM':
             raise error.UnsupportedSocketType()
+        if options is None:
+            options = {}
         self.nickname = nickname
         self.style = style
         self._keyfile = keyfile
