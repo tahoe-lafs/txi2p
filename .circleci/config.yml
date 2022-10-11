@@ -45,16 +45,39 @@ jobs:
             set -eux -o pipefail
 
             if [ "<< parameters.repository >>" = "testpypi" ]; then
-              export TWINE_PASSWORD="${TESTPYPI_API_TOKEN}"
+              if [ -v TESTPYPI_API_TOKEN ]; then
+                export TWINE_PASSWORD="${TESTPYPI_API_TOKEN}"
+              fi
             elif [ "<< parameters.repository >>" = "pypi" ]; then
-              export TWINE_PASSWORD="${PYPI_API_TOKEN}"
+              if [ -v PYPI_API_TOKEN ]; then
+                export TWINE_PASSWORD="${PYPI_API_TOKEN}"
+              fi
             else
               echo "Unknown repository: << parameters.repository >>"
               exit 1
             fi
 
-            python -m pip install twine
-            python -m twine upload --non-interactive release-workspace/*
+            if [ -v TWINE_PASSWORD ]; then
+              python -m pip install twine
+              python -m twine upload --non-interactive release-workspace/*
+            else
+              # If we're building a from a forked repository then we're
+              # allowed to not have the credentials (but it's als fine of the
+              # owner of the fork supplied their own).
+              #
+              # https://circleci.com/docs/built-in-environment-variables/ says
+              # about `CIRCLE_PR_REPONAME`:
+              #
+              #   The name of the GitHub or Bitbucket repository where the
+              #   pull request was created. Only available on forked PRs.
+              #
+              # So if it is not set then we should have had credentials and we
+              # fail if we get here.
+              if ! [ -v CIRCLE_PR_REPONAME ]; then
+                echo "Required credentials (<<parameters.repository>>) are missing."
+                exit 1
+              fi
+            fi
 
   tests:
     parameters:
